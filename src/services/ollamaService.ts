@@ -1,4 +1,7 @@
 
+import { MCPServer } from "@/types/mcp";
+import { updateApiBaseUrl } from "./mcpService";
+
 type OllamaResponse = {
   model: string;
   created_at: string;
@@ -17,11 +20,18 @@ type ModelInfo = {
   details: Record<string, any>;
 };
 
-export const OLLAMA_API_BASE_URL = "http://localhost:11434";
+let OLLAMA_API_BASE_URL = "http://localhost:11434";
 
-export async function listModels(): Promise<string[]> {
+export function setApiBaseUrl(server: MCPServer | null) {
+  OLLAMA_API_BASE_URL = updateApiBaseUrl(server);
+}
+
+export async function listModels(server?: MCPServer): Promise<string[]> {
   try {
-    const response = await fetch(`${OLLAMA_API_BASE_URL}/api/tags`);
+    // If a specific server is provided, use its URL
+    const baseUrl = server ? server.url : OLLAMA_API_BASE_URL;
+    
+    const response = await fetch(`${baseUrl}/api/tags`);
     if (!response.ok) {
       throw new Error(`Failed to list models: ${response.statusText}`);
     }

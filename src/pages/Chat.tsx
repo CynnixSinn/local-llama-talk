@@ -1,15 +1,15 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Send, RefreshCw, AlertTriangle } from "lucide-react";
+import { Send, RefreshCw, AlertTriangle, Server } from "lucide-react";
 import { ChatMessage } from "@/components/ChatMessage";
 import { CodePreview } from "@/components/CodePreview";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { sendMessageToOllama } from "@/services/ollamaService";
 import { useOllama } from "@/contexts/OllamaContext";
 import { useToast } from "@/components/ui/use-toast";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 type Message = {
   role: "user" | "assistant";
@@ -23,7 +23,15 @@ const Chat = () => {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const { currentModel, isConnected, error, refreshModels } = useOllama();
+  const { 
+    currentModel, 
+    isConnected, 
+    error, 
+    refreshModels, 
+    currentServer, 
+    servers, 
+    setCurrentServer 
+  } = useOllama();
   const { toast } = useToast();
 
   const scrollToBottom = () => {
@@ -35,9 +43,15 @@ const Chat = () => {
   }, [messages]);
 
   useEffect(() => {
-    // Focus input on component mount
     inputRef.current?.focus();
   }, []);
+
+  const handleServerChange = async (serverId: string) => {
+    const server = servers.find(s => s.id === serverId);
+    if (server) {
+      await setCurrentServer(server);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,7 +72,6 @@ const Chat = () => {
         throw new Error("No Ollama model selected");
       }
 
-      // Create a placeholder for the assistant's response
       const assistantMessageId = (Date.now() + 1).toString();
       setMessages((prev) => [
         ...prev,
@@ -69,7 +82,6 @@ const Chat = () => {
         },
       ]);
 
-      // Function to update the assistant's message as it streams in
       const updateAssistantMessage = (content: string, done: boolean) => {
         setMessages((prev) => 
           prev.map((msg) => 
@@ -82,7 +94,6 @@ const Chat = () => {
         }
       };
 
-      // Send message to Ollama and update response as it streams in
       await sendMessageToOllama(currentModel, input, updateAssistantMessage);
     } catch (error) {
       console.error("Error fetching response:", error);
@@ -112,11 +123,34 @@ const Chat = () => {
               {currentModel}
             </span>
           )}
+          {currentServer && (
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <Server className="h-3 w-3" />
+              <span>{currentServer.name}</span>
+            </div>
+          )}
         </div>
         <div className="flex gap-2">
+          {servers.length > 1 && (
+            <Select 
+              value={currentServer?.id} 
+              onValueChange={handleServerChange}
+            >
+              <SelectTrigger className="h-9 w-[180px]">
+                <SelectValue placeholder="Select server" />
+              </SelectTrigger>
+              <SelectContent>
+                {servers.map(server => (
+                  <SelectItem key={server.id} value={server.id}>
+                    {server.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
           <Button variant="outline" onClick={refreshModels} className="gap-2" size="sm">
             <RefreshCw className="h-4 w-4" />
-            Refresh Models
+            Refresh
           </Button>
           <Button variant="ghost" onClick={resetChat} className="gap-2">
             <RefreshCw className="h-4 w-4" />

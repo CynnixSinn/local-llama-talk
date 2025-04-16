@@ -1,0 +1,14 @@
+
+{
+  "servers": [
+    {
+      "id": "local-ollama",
+      "name": "Local Ollama",
+      "url": "http://localhost:11434",
+      "type": "ollama",
+      "isActive": true,
+      "description": "Local Ollama instance running on default port"
+    }
+  ],
+  "defaultServerId": "local-ollama"
+}
