@@ -31,10 +31,10 @@ export const Markdown = ({ content }: MarkdownProps) => {
       const code = match[2];
       elements.push(
         <div key={`code-${match.index}`} className="mb-4">
-          <div className="bg-zinc-800 text-zinc-100 p-1 text-sm rounded-t-md">
-            {language || "code"}
+          <div className="bg-black/50 text-primary/90 p-1 text-sm rounded-t-md border-t border-l border-r border-white/10 flex items-center">
+            <span className="font-mono">{language || "code"}</span>
           </div>
-          <pre className="bg-zinc-900 text-zinc-100 p-3 overflow-x-auto rounded-b-md">
+          <pre className="bg-black/30 text-zinc-100 p-3 overflow-x-auto rounded-b-md border border-white/10">
             <code>{code}</code>
           </pre>
         </div>
